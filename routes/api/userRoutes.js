@@ -1,12 +1,18 @@
 const router = require('express').Router();
 const User = require('../../Models/User'); 
+const { signToken } = require('../../utils/auth');
 
 // POST /api/users/register - Create a new user
 router.post('/register', async (req, res) => {
   try {
     const user = await User.create(req.body);
     console.log('USER CREATED:', user); // debug
-    res.status(201).json({ user }); // optionally include token if you have signToken
+
+    // generate a token
+    const token = signToken(user);
+
+    // return both user and token
+    res.status(201).json({ token, user });
   } catch (err) {
     console.error(err);
     res.status(400).json({ message: 'Failed to create user', error: err });
@@ -26,7 +32,11 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Wrong password!' });
     }
 
-    res.json({ user }); // optionally include token
+    // Generate a JWT token
+    const token = signToken(user);
+
+    // Return both token and user
+    res.json({ token, user });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error', error: err });

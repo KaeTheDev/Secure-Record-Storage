@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { Note } = require('../../Models/Note');
+const Note = require('../../Models/Note');
 const { authMiddleware } = require('../../utils/auth');
  
 // Apply authMiddleware to all routes in this file
@@ -49,21 +49,25 @@ router.get('/:id', async (req, res) => {
 // POST /api/notes - Create a new note
 router.post('/', async (req, res) => {
   try {
-    // Make sure user exists
-    if(!req.user) {
+    if (!req.user) {
       return res.status(401).json({ message: "You must be logged in to create a note." });
     }
+
     const note = await Note.create({
       ...req.body,
-      // The user ID needs to be added here / connects note to logged in user
       user: req.user._id,
     });
+
     res.status(201).json(note);
   } catch (err) {
-    res.status(400).json(err);
+    console.error(err); // logs the full Mongoose error in the server console
+    res.status(400).json({
+      message: 'Failed to create note',
+      errors: err.errors || err.message || err, // sends back validation errors
+    });
   }
 });
- 
+
 // PUT /api/notes/:id - Update a note
 router.put('/:id', async (req, res) => {
   try {
