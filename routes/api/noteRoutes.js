@@ -21,7 +21,31 @@ router.get('/', async (req, res) => {
     res.status(500).json(err);
   }
 });
- 
+
+// GET /api/notes/:id - Get a single note
+router.get('/:id', async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'You must be logged in to view this note.' });
+    }
+
+    const note = await Note.findById(req.params.id);
+    if (!note) {
+      return res.status(404).json({ message: 'No note found with this id!' });
+    }
+
+    // Check ownership
+    if (note.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'User is not authorized to view this note.' });
+    }
+
+    res.json(note);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error', error: err });
+  }
+});
+
 // POST /api/notes - Create a new note
 router.post('/', async (req, res) => {
   try {
