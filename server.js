@@ -4,6 +4,7 @@ const express = require('express');
 const path = require('path');
 const connectDB = require('./config/connection');
 const userRoutes = require('./routes/api/userRoutes');
+const notesRoutes = require('./routes/api/noteRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -15,6 +16,7 @@ connectDB();
 
 // Routes
 app.use('/api/users', userRoutes);
+app.use('/api/notes', notesRoutes)
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {

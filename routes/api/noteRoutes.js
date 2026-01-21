@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { Note } = require('../../models');
+const { Note } = require('../../Models/Note');
 const { authMiddleware } = require('../../utils/auth');
  
 // Apply authMiddleware to all routes in this file
