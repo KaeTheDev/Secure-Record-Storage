@@ -11,7 +11,11 @@ router.get('/', async (req, res) => {
   // This currently finds all notes in the database.
   // It should only find notes owned by the logged in user.
   try {
-    const notes = await Note.find({});
+
+    if(!req.user){
+      return res.status(401).json({ message: "You must be logged in to view notes." });
+    }
+    const notes = await Note.find({ user: req.user._id });
     res.json(notes);
   } catch (err) {
     res.status(500).json(err);
