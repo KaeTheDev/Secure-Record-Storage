@@ -71,26 +71,29 @@ router.put('/:id', async (req, res) => {
 // DELETE /api/notes/:id - Delete a note
 router.delete('/:id', async (req, res) => {
   try {
-
-    if(!req.user) {
-      return res.status(401).json({ message: "You must be logged in to delete this note." });
+    if (!req.user) {
+      return res.status(401).json({ message: "You must be logged in to delete a note." });
     }
 
-    // This needs an authorization check
-    const note = await Note.findByIdAndDelete(req.params.id);
+    // Step 1: Find the note
+    const note = await Note.findById(req.params.id);
     if (!note) {
       return res.status(404).json({ message: 'No note found with this id!' });
     }
-    
+
+    // Step 2: Check ownership
     if (note.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'User is not authorized to delete this note.' });
     }
+
+    // Step 3: Delete
     await note.deleteOne();
 
     res.json({ message: 'Note deleted!' });
   } catch (err) {
-    res.status(500).json(err);
+    console.error(err);
+    res.status(500).json({ message: 'Server error', error: err });
   }
 });
  
-module.exports = router;
+module.exports = router; 
