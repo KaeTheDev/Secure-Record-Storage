@@ -43,15 +43,29 @@ router.post('/', async (req, res) => {
 // PUT /api/notes/:id - Update a note
 router.put('/:id', async (req, res) => {
   try {
-    // This needs an authorization check
-    const note = await Note.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!note) {
-      return res.status(404).json({ message: 'No note found with this id!' });
+    if(!req.user) {
+      return res.status(401).json({ message: "You must be logged in to update a note." });
     }
-    res.json(note);
-  } catch (err) {
-    res.status(500).json(err);
-  }
+   // Find the note by ID
+   const note = await Note.findById(req.params.id);
+   if (!note) {
+     return res.status(404).json({ message: 'No note found with this id!' });
+   }
+
+   // Check if the logged-in user is the owner of the note
+   if (note.user.toString() !== req.user._id.toString()) {
+     return res.status(403).json({ message: 'User is not authorized to update this note.' });
+   }
+
+   // Update the note
+   Object.assign(note, req.body); // merge req.body into the note
+   await note.save();
+
+   res.json(note);
+ } catch (err) {
+   console.error(err);
+   res.status(500).json({ message: 'Server error', error: err });
+ }
 });
  
 // DELETE /api/notes/:id - Delete a note
