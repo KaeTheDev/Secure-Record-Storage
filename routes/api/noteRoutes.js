@@ -21,9 +21,14 @@ router.get('/', async (req, res) => {
 // POST /api/notes - Create a new note
 router.post('/', async (req, res) => {
   try {
+    // Make sure user exists
+    if(!req.user) {
+      return res.status(401).json({ message: "You must be logged in to create a note." });
+    }
     const note = await Note.create({
       ...req.body,
-      // The user ID needs to be added here
+      // The user ID needs to be added here / connects note to logged in user
+      user: req.user._id,
     });
     res.status(201).json(note);
   } catch (err) {
